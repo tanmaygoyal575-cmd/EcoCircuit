@@ -68,5 +68,3 @@ Electronic waste is the world's fastest-growing domestic waste stream. Less than
 * **Team Leader:** Tanmay Goyal
 * **Members:** Tanya Gupta, Daksh Bansal, Ayushi Chaudhary
 
----
-*Built for Google Developer Group On Campus TechSprint.*
