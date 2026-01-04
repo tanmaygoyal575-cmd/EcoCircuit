@@ -22,29 +22,23 @@ Electronic waste is the world's fastest-growing domestic waste stream. Less than
 
 ## 📸 Screenshots
 
-### 1. AI Scanner & Home
-*Real-time identification of electronic items directly in the browser.*
-![AI Scanner](screenshots/ai-scanner.png)
+### 1. AI Scanner
+![AI Scanner](ai-scanner.png)
 
 ### 2. Solutions Map
-*Locates certified recycling facilities near the user.*
-![Solutions Map](screenshots/solutions-map.png)
+![Solutions Map](solutions-map.png)
 
 ### 3. Impact Calculator
-*Calculates potential environmental savings for specific devices.*
-![Impact Calculator](screenshots/impact-calculator.png)
+![Impact Calculator](impact-calculator.png)
 
 ### 4. Global Impact Dashboard
-*Live tracking of the platform's collective environmental stats.*
-![Global Dashboard](screenshots/global-dashboard.png)
+![Global Dashboard](global-dashboard.png)
 
 ### 5. Submission Wizard
-*Streamlined process to schedule e-waste pickups.*
-![Submission Wizard](screenshots/submission-wizard.png)
+![Submission Wizard](submission-wizard.png)
 
 ### 6. User Profile
-*Gamified dashboard tracking individual contributions and badges.*
-![User Profile](screenshots/user-profile.png)
+![User Profile](user-profile.png)
 
 ## 🛠️ Technology Stack
 * **Frontend:** HTML5, CSS3, JavaScript (Vanilla)
@@ -61,7 +55,7 @@ Electronic waste is the world's fastest-growing domestic waste stream. Less than
     ```bash
     cd EcoCircuit
     ```
-3.  Open `index.html` in any modern web browser (Chrome/Edge/Firefox).
+3.  Open `Ecocircuit.html` in any modern web browser (Chrome/Edge/Firefox).
     * *Note: For the camera to work, the site must be served over HTTPS or localhost.*
 
 ## 👥 Team Details
