@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoCircuit | Comprehensive E-Waste AI Platform</title>
+    <title>EcoCircuit | E-Waste AI & Rewards</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
         /* --- CSS VARIABLES & RESET --- */
@@ -18,38 +21,48 @@
             --light: #F3F4F6; 
             --white: #ffffff;
             --gradient: linear-gradient(135deg, #ecfdf5 0%, #eff6ff 100%);
-            --cta-gradient: linear-gradient(135deg, #10B981 0%, #3B82F6 100%);
+            --cta-gradient: linear-gradient(135deg, #059669 0%, #2563EB 100%);
             --text-gray: #6B7280;
             --border: #E5E7EB;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { color: var(--dark); background-color: #F9FAFB; line-height: 1.6; }
 
         /* --- UTILITIES --- */
         .container { max-width: 1200px; margin: 0 auto; padding: 0 5%; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s ease; width: auto; font-size: 0.95rem; text-decoration: none; }
-        .btn-primary { background: var(--primary); color: var(--white); box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s ease; width: auto; font-size: 0.95rem; text-decoration: none; gap: 0.5rem; }
+        .btn-primary { background: var(--primary); color: var(--white); box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3); }
         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
         .btn-outline { background: white; border: 1px solid #e5e7eb; color: var(--dark); }
         .btn-outline:hover { background: #f9fafb; border-color: #d1d5db; }
         .btn-sm { padding: 0.4rem 1rem; font-size: 0.85rem; }
-        .btn-white { background: white; color: var(--primary); font-weight: 700; border-radius: 50px; }
+        .btn-white { background: white; color: var(--secondary); font-weight: 700; border-radius: 50px; }
         .btn-white:hover { background: #f9fafb; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .btn-outline-white { background: transparent; border: 1px solid rgba(255,255,255,0.4); color: white; border-radius: 50px; }
-        .btn-outline-white:hover { background: rgba(255,255,255,0.1); border-color: white; }
         .btn-full { width: 100%; }
         
         .hidden { display: none; }
 
         /* --- NAVBAR --- */
-        .navbar { padding: 1.5rem 0; background: var(--white); box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .navbar { padding: 1.2rem 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
         .logo span { color: var(--primary); }
-        .nav-links { display: flex; gap: 1.5rem; }
-        .nav-links a { text-decoration: none; color: var(--dark); font-weight: 500; transition: color 0.2s; font-size: 0.95rem; }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--dark); font-weight: 500; transition: color 0.2s; font-size: 0.95rem; cursor: pointer; }
         .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+
+        /* Points Badge in Nav */
+        .points-badge { background: #FEF3C7; color: #D97706; padding: 0.4rem 0.8rem; border-radius: 50px; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; border: 1px solid #FCD34D; cursor: pointer; transition: transform 0.2s; }
+        .points-badge:hover { transform: scale(1.05); background: #FDE68A; }
+
+        /* --- REWARD POPUP STYLES --- */
+        .reward-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .reward-overlay.show { opacity: 1; pointer-events: all; }
+        .reward-card { background: white; padding: 2.5rem; border-radius: 20px; text-align: center; max-width: 400px; transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden; }
+        .reward-overlay.show .reward-card { transform: scale(1); }
+        .reward-icon { font-size: 4rem; margin-bottom: 1rem; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
 
         /* --- SECTION VISIBILITY --- */
         section { display: none !important; }
@@ -57,59 +70,73 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* --- HERO & CAMERA STYLES --- */
-        .hero { background: var(--gradient); min-height: 90vh; padding-top: 2rem; display: flex; flex-direction: column; }
-        .hero-layout { display: flex; align-items: center; justify-content: space-between; gap: 2rem; width: 100%; padding-bottom: 4rem; }
+        .hero { background: var(--gradient); min-height: 90vh; padding-top: 3rem; display: flex; flex-direction: column; }
+        .hero-layout { display: flex; align-items: center; justify-content: space-between; gap: 3rem; width: 100%; padding-bottom: 4rem; }
         .hero-text { flex: 1; }
-        .hero h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; }
+        .hero h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -1px; }
         
-        .hero-card { flex: 1; background: var(--white); padding: 1.5rem; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 500px; text-align: center; }
-        .camera-wrapper { position: relative; width: 100%; height: 300px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 1rem; }
+        .hero-card { flex: 1; background: var(--white); padding: 1.5rem; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 500px; text-align: center; border: 1px solid rgba(0,0,0,0.05); }
+        .camera-wrapper { position: relative; width: 100%; height: 320px; background: #000; border-radius: 16px; overflow: hidden; margin-bottom: 1rem; box-shadow: inset 0 0 20px rgba(0,0,0,0.2); }
         video, canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
         canvas { z-index: 10; }
         .camera-placeholder { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 20; background: #111; }
+        
+        .scan-line { position: absolute; width: 100%; height: 4px; background: var(--primary); top: 0; z-index: 15; box-shadow: 0 0 10px var(--primary); animation: scan 2s linear infinite; display: none; }
+        @keyframes scan { 0% { top: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 
-        /* --- IMPACT GRID (HERO) --- */
+        /* --- IMPACT GRID --- */
         .impact-dashboard { margin-top: 1rem; text-align: left; }
-        .impact-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; color: #4B5563; }
         .impact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .impact-item { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .impact-icon { font-size: 1.5rem; margin-bottom: 5px; }
-        .impact-val { font-size: 1.4rem; font-weight: 800; line-height: 1.2; }
-        .impact-unit { font-size: 0.8rem; color: #666; font-weight: 500; }
+        .impact-val { font-size: 1.2rem; font-weight: 800; line-height: 1.2; }
+        .impact-unit { font-size: 0.75rem; color: #666; font-weight: 500; }
         .color-co2 { color: #10B981; } .color-tree { color: #059669; } .color-energy { color: #F59E0B; } .color-water { color: #2563EB; }
 
         /* --- CTA SECTION --- */
-        .cta-section { background: var(--cta-gradient); color: white; padding: 5rem 0 0 0; text-align: center; width: 100%; position: relative; overflow: hidden; }
+        .cta-section { background: var(--cta-gradient); color: white; padding: 6rem 0 0 0; text-align: center; width: 100%; position: relative; overflow: hidden; }
         .cta-content { max-width: 1200px; margin: 0 auto; padding: 0 5%; position: relative; z-index: 2; }
-        .cta-header h2 { font-size: 2.8rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -0.5px; }
-        .cta-header p { font-size: 1.1rem; opacity: 0.9; max-width: 700px; margin: 0 auto 4rem auto; }
+        .cta-header h2 { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -1px; }
+        .cta-header p { font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto 3rem auto; }
         
-        .glass-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
-        .glass-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 2rem 1.5rem; text-align: left; transition: transform 0.3s; }
+        .glass-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 4rem; }
+        .glass-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 2rem; text-align: left; transition: transform 0.3s; cursor: pointer; }
         .glass-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.15); }
-        .glass-icon { font-size: 1.5rem; margin-bottom: 1rem; display: inline-block; padding: 8px; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; }
-        .glass-card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 700; }
-        .glass-card p { font-size: 0.85rem; opacity: 0.8; line-height: 1.5; }
+        .glass-icon { font-size: 2rem; margin-bottom: 1rem; display: inline-block; }
+        .glass-card h3 { font-size: 1.2rem; margin-bottom: 0.5rem; font-weight: 700; }
+        
+        .cta-stats-bar { background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); padding: 3rem 0; margin-top: 5rem; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; border-top: 1px solid rgba(255,255,255,0.1); }
+        .cta-stat h3 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.25rem; font-family: monospace; }
+        .cta-stat p { font-size: 0.9rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
 
-        .cta-stats-bar { background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(5px); padding: 3rem 0; margin-top: 5rem; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; border-top: 1px solid rgba(255,255,255,0.1); }
-        .cta-stat h3 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.25rem; }
-        .cta-stat p { font-size: 0.9rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
+        /* --- REWARDS STORE STYLES --- */
+        .coupon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; }
+        .coupon-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 0; overflow: hidden; transition: transform 0.2s; display: flex; flex-direction: column; }
+        .coupon-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .coupon-img { height: 120px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 3rem; border-bottom: 1px solid #eee; }
+        .coupon-content { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; }
+        .coupon-cost { font-weight: 800; color: #D97706; margin-bottom: 0.5rem; display: block; }
+        .coupon-code { background: #F3F4F6; border: 2px dashed #D1D5DB; padding: 0.5rem; text-align: center; margin-top: 1rem; font-family: monospace; font-weight: 700; letter-spacing: 1px; display: none; }
+        .coupon-code.revealed { display: block; background: #ECFDF5; border-color: #10B981; color: #065F46; }
 
-        /* --- FOOTER --- */
-        .site-footer { background: white; color: var(--dark); padding: 4rem 0 2rem 0; text-align: left; border-top: 1px solid #eee; }
-        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; padding: 0 5%; }
-        .footer-col h4 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem; color: #9CA3AF; }
-        .footer-col ul { list-style: none; }
-        .footer-col li { margin-bottom: 0.8rem; }
-        .footer-col a { text-decoration: none; color: var(--dark); font-size: 0.9rem; transition: color 0.2s; cursor: pointer; }
-        .footer-col a:hover { color: var(--primary); }
+        /* --- COMMUNITY STYLES --- */
+        .comm-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+        .post-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #E5E7EB; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; }
+        .event-card { background: var(--primary); color: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+        
+        .social-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 1rem; }
+        .social-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border: 1px solid #eee; border-radius: 12px; padding: 1rem; cursor: pointer; transition: all 0.2s; color: var(--dark); text-decoration: none; }
+        .social-btn:hover { background: #f9fafb; transform: translateY(-2px); border-color: var(--primary); }
+        .social-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .discord-color { color: #5865F2; } .insta-color { color: #E1306C; } .wa-color { color: #25D366; }
 
         /* --- CALCULATOR --- */
         .calc-header { text-align: center; margin-bottom: 3rem; }
-        .calc-header h2 { font-size: 2.5rem; font-family: monospace; font-weight: 700; margin-bottom: 0.5rem; }
+        .calc-header h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -1px; }
         .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; max-width: 1000px; margin: 0 auto; }
         .calc-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .calc-info { margin-top: 2rem; background: #f0fdf4; padding: 1rem; border-radius: 8px; border: 1px solid #d1fae5; color: #065f46; display: flex; gap: 0.75rem; }
         .result-empty { text-align: center; color: var(--text-gray); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
         .result-filled { display: none; animation: fadeIn 0.5s ease; }
         .res-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #f3f4f6; }
@@ -122,7 +149,7 @@
         .step.completed .step-circle { background: var(--primary); color: white; border-color: var(--primary); }
         .stepper::before { content: ''; position: absolute; top: 20px; left: 50px; right: 50px; height: 2px; background: var(--border); z-index: 1; }
         
-        .wizard-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 2rem; max-width: 900px; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .wizard-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 2rem; max-width: 900px; margin: 0 auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
         .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
         .category-option { border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s; }
         .category-option:hover { border-color: var(--primary); background: #f0fdf4; transform: translateY(-2px); }
@@ -135,10 +162,11 @@
 
         /* --- DASHBOARD --- */
         .dashboard-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .dashboard-title h2 { font-size: 2.2rem; margin-bottom: 0.5rem; font-family: monospace; font-weight: 700; letter-spacing: -1px; }
-        .live-panel { background: white; border: 1px solid #e5e7eb; border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; }
-        .live-stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 2rem; }
-        .live-stat .value { font-size: 1.75rem; font-weight: 800; color: var(--dark); }
+        .dashboard-title h2 { font-size: 2.2rem; margin-bottom: 0.5rem; font-weight: 800; letter-spacing: -1px; }
+        .live-panel { background: white; border: 1px solid #e5e7eb; border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .live-stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; }
+        .live-stat h4 { color: #6B7280; font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .live-stat .value { font-size: 1.8rem; font-weight: 800; color: var(--dark); font-family: monospace; }
         .live-stat .value.green { color: var(--primary); }
         .live-stat .value.orange { color: #F97316; }
         .main-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
@@ -149,87 +177,57 @@
         .icon-leaf { color: #059669; border: 1px solid #059669; }
         .icon-users { color: #3B82F6; border: 1px solid #3B82F6; }
         .icon-loc { color: #F59E0B; border: 1px solid #F59E0B; }
-        .trend { position: absolute; top: 1.5rem; right: 1.5rem; font-size: 0.85rem; font-weight: 600; color: #10B981; }
+        .trend { position: absolute; top: 1.5rem; right: 1.5rem; font-size: 0.85rem; font-weight: 600; color: #10B981; background: #ecfdf5; padding: 2px 8px; border-radius: 50px; }
+        .big-num { font-size: 2rem; font-weight: 800; margin-bottom: 0.25rem; }
 
-        /* --- REDESIGNED SOLUTIONS MAP STYLES --- */
+        /* --- SOLUTIONS MAP STYLES --- */
         .solutions-header { text-align: center; margin-bottom: 3rem; }
         .solutions-header p { max-width: 600px; margin: 0 auto; color: var(--text-gray); }
-        
-        /* Stats Row */
         .solutions-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
         .s-stat-card { background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; display: flex; flex-direction: column; gap: 0.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .s-stat-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-bottom: 0.5rem; }
-        .icon-fac { background: #DCFCE7; color: #166534; } .icon-part { background: #E0F2FE; color: #075985; } .icon-cit { background: #ede9fe; color: #5b21b6; } .icon-usr { background: #ffedd5; color: #9a3412; }
-        .s-stat-label { font-size: 0.85rem; color: #6B7280; font-weight: 500; }
-        .s-stat-val { font-size: 1.5rem; font-weight: 700; color: var(--dark); line-height: 1; }
-
-        /* Main Layout */
         .solutions-layout { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; }
         
-        /* Sidebar */
         .s-sidebar { background: white; border-radius: 16px; padding: 1.5rem; border: 1px solid #e5e7eb; height: fit-content; }
-        .s-filter-group { margin-bottom: 1.5rem; }
-        .s-filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .s-filter-title { font-weight: 700; font-size: 1.1rem; }
-        .s-label { font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block; }
-        
-        .s-input-group { position: relative; margin-bottom: 1rem; }
-        .s-input { width: 100%; padding: 0.6rem 0.8rem; padding-left: 2rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.9rem; }
-        .s-search-icon { position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.9rem; }
-        
-        .s-select { width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.9rem; background: white; color: #374151; margin-bottom: 1rem; }
-        
-        .s-checkbox-group { display: flex; flex-direction: column; gap: 0.6rem; }
-        .s-checkbox { display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; color: #4b5563; cursor: pointer; }
-        .s-checkbox input { accent-color: var(--primary); width: 16px; height: 16px; }
-
-        /* Facility Grid */
-        .s-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
-        .s-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; }
-        .s-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        
-        .s-img-container { height: 160px; background: #f3f4f6; position: relative; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 3rem; }
+        .s-input { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #d1d5db; border-radius: 8px; margin-bottom: 1rem; }
+        .s-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; transition: all 0.2s; display: flex; flex-direction: column; margin-bottom: 1.5rem; }
+        .s-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1); border-color: var(--primary); }
+        .s-img-container { height: 160px; background: #f3f4f6; position: relative; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 3rem; border-bottom: 1px solid #eee; }
         .s-badge-container { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; }
-        .s-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; background: rgba(0,0,0,0.6); color: white; backdrop-filter: blur(2px); }
+        .s-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; font-weight: 600; background: rgba(0,0,0,0.6); color: white; backdrop-filter: blur(2px); }
         .s-badge.verified { background: var(--primary); }
-        
         .s-card-content { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
-        .s-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
-        .s-card-title { font-weight: 700; font-size: 1.05rem; line-height: 1.3; color: var(--dark); margin-right: 0.5rem; }
-        .s-rating { display: flex; align-items: center; font-size: 0.85rem; font-weight: 600; color: #374151; gap: 2px; }
-        .star { color: #F59E0B; }
-        .s-reviews { color: #9CA3AF; font-weight: 400; margin-left: 2px; font-size: 0.8rem; }
-        
-        .s-meta { font-size: 0.85rem; color: #6B7280; display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 1rem; }
-        .s-meta-item { display: flex; align-items: center; gap: 0.4rem; }
-        .s-open { color: #16A34A; font-weight: 600; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; }
-        
-        .s-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.5rem; }
-        .s-tag { font-size: 0.75rem; background: #F3F4F6; color: #4B5563; padding: 3px 8px; border-radius: 4px; font-weight: 500; }
-        
+        .s-meta { font-size: 0.85rem; color: #6B7280; margin-bottom: 1rem; }
         .s-actions { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        
-        @media (max-width: 900px) {
-            .solutions-layout { grid-template-columns: 1fr; }
-            .hero h1 { font-size: 2.5rem; }
-        }
         
         /* Form Inputs */
         .form-group { margin-bottom: 1.5rem; }
         .form-label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--dark); }
         .form-input, .form-select { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; transition: border 0.2s; background: white; }
         .form-input:focus, .form-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
-        optgroup { font-weight: 700; color: var(--text-gray); }
 
+        @media (max-width: 900px) {
+            .solutions-layout, .calc-grid, .comm-grid { grid-template-columns: 1fr; }
+            .hero-layout { flex-direction: column; text-align: center; }
+            .hero-text { padding-bottom: 0; }
+            .impact-dashboard { text-align: left; }
+        }
         @media (max-width: 768px) {
-            .hero-layout, .calc-grid, .category-grid { grid-template-columns: 1fr; }
             .nav-links { display: none; }
-            .stepper { display: none; } 
             .cta-stats-bar { flex-direction: column; gap: 2rem; }
         }
     </style>
 </head>
 <body>
+
+    <div class="reward-overlay" id="daily-reward-popup">
+        <div class="reward-card">
+            <div class="reward-icon">🎁</div>
+            <h2 style="font-size:1.8rem; margin-bottom:0.5rem; color:#10B981;">Daily Bonus!</h2>
+            <p style="color:#6B7280; margin-bottom:1.5rem;">Thanks for visiting EcoCircuit today. You've earned free Green Points!</p>
+            <div style="font-size:2.5rem; font-weight:800; color:#F59E0B; margin-bottom:1.5rem;">+50 PTS</div>
+            <button class="btn btn-primary btn-full" onclick="claimReward()">Collect Reward</button>
+        </div>
+    </div>
 
     <nav class="navbar">
         <div class="container nav-content">
@@ -237,12 +235,14 @@
                 ♻️ Eco<span>Circuit</span>
             </div>
             <div class="nav-links">
-                <a href="#" onclick="navigate(event, 'solutions')" id="nav-solutions">Solutions</a>
-                <a href="#" onclick="navigate(event, 'impact')" id="nav-impact">Impact</a>
-                <a href="#" onclick="navigate(event, 'calculator')" id="nav-calculator">Calculator</a>
-                <a href="#" onclick="navigate(event, 'submit-waste')" id="nav-submit-waste" class="btn btn-primary btn-sm" style="color:white; padding: 0.5rem 1rem;">Submit E-Waste</a>
+                <a href="#" onclick="navigate(event, 'solutions')" id="nav-solutions">Solutions Map</a>
+                <a href="#" onclick="navigate(event, 'community')" id="nav-community">Community</a>
+                <a href="#" onclick="navigate(event, 'rewards')" id="nav-rewards">Rewards</a>
+                <a href="#" onclick="navigate(event, 'impact')" id="nav-impact">Dashboard</a>
+                <a href="#" onclick="navigate(event, 'submit-waste')">Submit</a>
+                <div class="points-badge" id="nav-points" onclick="navigate(event, 'rewards')">🏆 0 Pts</div>
             </div>
-            <button class="btn btn-outline btn-sm" onclick="navigate(event, 'home')">Scan Item</button>
+            <button class="btn btn-outline btn-sm" onclick="navigate(event, 'home'); setTimeout(startCamera, 500); window.scrollTo(0,0);">📷 Scan Item</button>
         </div>
     </nav>
 
@@ -250,33 +250,35 @@
         <div class="container hero-layout">
             <div class="hero-text">
                 <h1>Classify E-Waste with <span style="color:var(--primary)">AI</span></h1>
-                <p>Detects ICT, Consumer Electronics, Appliances, and Tools directly in your browser.</p>
-                <div style="margin-top: 2rem;">
+                <p style="font-size: 1.1rem; color: #4B5563; margin-bottom: 2rem;">Instantly detect ICT devices, electronics, and appliances. Determine recyclability and carbon impact in real-time.</p>
+                <div>
                     <button class="btn btn-primary" onclick="startCamera()">Start AI Scanner</button>
                     <button class="btn btn-outline" onclick="navigate(event, 'submit-waste')" style="margin-left: 10px;">Manual Upload</button>
                 </div>
             </div>
             
             <div class="hero-card">
-                <h3>Live Detection Feed</h3>
-                <span style="background:#e5e7eb; padding:4px 8px; border-radius:4px; font-size:0.75rem;" id="model-status">Loading AI Model...</span>
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                    <h3>Live Detection</h3>
+                    <span style="background:#e5e7eb; padding:2px 8px; border-radius:4px; font-size:0.75rem; display:flex; align-items:center;" id="model-status">⌛ Loading Model...</span>
+                </div>
                 <div class="camera-wrapper">
+                    <div class="scan-line" id="scan-line"></div>
                     <div class="camera-placeholder" id="placeholder">
-                        <div style="font-size: 2rem;">📷</div>
-                        <p>Waiting for permission...</p>
+                        <div style="font-size: 3rem; margin-bottom:1rem;">📷</div>
+                        <p>Click "Start AI Scanner"</p>
+                        <p style="font-size:0.8rem; opacity:0.7;">Requires Camera Permissions</p>
                     </div>
                     <video id="webcam" autoplay playsinline muted></video>
                     <canvas id="canvas"></canvas>
                 </div>
                 <div class="impact-dashboard">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <span class="impact-title">Detected: <span id="item-name" style="color:var(--primary); font-weight:800;">Waiting...</span></span>
+                        <span class="impact-title">Detected: <span id="item-name" style="color:var(--primary); font-weight:800; font-size:1.1rem;">Waiting...</span></span>
                     </div>
                     <div class="impact-grid">
-                        <div class="impact-item"><div class="impact-icon">🍃</div><div class="impact-val color-co2" id="val-co2">--</div><div class="impact-unit">kg CO₂</div></div>
-                        <div class="impact-item"><div class="impact-icon">🌳</div><div class="impact-val color-tree" id="val-tree">--</div><div class="impact-unit">Trees</div></div>
-                        <div class="impact-item"><div class="impact-icon">⚡</div><div class="impact-val color-energy" id="val-energy">--</div><div class="impact-unit">kWh</div></div>
-                        <div class="impact-item"><div class="impact-icon">💧</div><div class="impact-val color-water" id="val-water">--</div><div class="impact-unit">Liters</div></div>
+                        <div class="impact-item"><div class="impact-icon">🍃</div><div class="impact-val color-co2" id="val-co2">--</div><div class="impact-unit">kg CO₂ Avoided</div></div>
+                        <div class="impact-item"><div class="impact-icon">⚡</div><div class="impact-val color-energy" id="val-energy">--</div><div class="impact-unit">kWh Saved</div></div>
                     </div>
                 </div>
             </div>
@@ -286,45 +288,182 @@
             <div class="cta-content">
                 <div class="cta-header">
                     <h2>Ready to Make a Difference?</h2>
-                    <p>Join our growing community of environmental champions.</p>
+                    <p>Join the EcoCircuit community.</p>
                 </div>
                 <div class="glass-grid">
-                    <div class="glass-card"><div class="glass-icon">📤</div><h3>Submit Devices</h3><p>Quick and easy device submission.</p></div>
-                    <div class="glass-card"><div class="glass-icon">📊</div><h3>Track Impact</h3><p>Real-time dashboard visualization.</p></div>
-                    <div class="glass-card"><div class="glass-icon">🎖️</div><h3>Earn Rewards</h3><p>Unlock achievements.</p></div>
-                    <div class="glass-card"><div class="glass-icon">👥</div><h3>Join Community</h3><p>Connect with others.</p></div>
-                </div>
-                <div style="margin-bottom: 2rem;">
-                    <button class="btn btn-white" onclick="navigate(event, 'submit-waste')">Submit Your First Device</button>
-                    <button class="btn btn-outline-white" style="margin-left: 10px;" onclick="navigate(event, 'impact')">View Impact Dashboard</button>
+                    <div class="glass-card" onclick="navigate(event, 'submit-waste')" style="cursor:pointer;"><div class="glass-icon">📤</div><h3>Submit Devices</h3><p>Quick and easy device submission.</p></div>
+                    <div class="glass-card" onclick="navigate(event, 'impact')" style="cursor:pointer;"><div class="glass-icon">📊</div><h3>Track Impact</h3><p>Real-time dashboard visualization.</p></div>
+                    <div class="glass-card" onclick="navigate(event, 'rewards')" style="cursor:pointer;"><div class="glass-icon">🎁</div><h3>Daily Rewards</h3><p>Earn coupons for every visit!</p></div>
+                    <div class="glass-card" onclick="navigate(event, 'community')" style="cursor:pointer;"><div class="glass-icon">🤝</div><h3>Community</h3><p>Join forums and local drives.</p></div>
                 </div>
             </div>
             <div class="cta-stats-bar">
-                <div class="cta-stat"><h3>♻️ 847K+</h3><p>Devices Recycled</p></div>
-                <div class="cta-stat"><h3>👤 45K+</h3><p>Active Members</p></div>
-                <div class="cta-stat"><h3>🌍 12.4K</h3><p>Tons CO2 Saved</p></div>
+                <div class="cta-stat"><h3>62M</h3><p>Tonnes Generated (2024)</p></div>
+                <div class="cta-stat"><h3>22.3%</h3><p>Recycling Rate</p></div>
+                <div class="cta-stat"><h3>$91B</h3><p>Value of Materials</p></div>
             </div>
         </div>
         
         <footer class="site-footer">
             <div class="footer-grid">
-                <div class="footer-col"><h4>Platform</h4><ul><li><a href="#" onclick="navigate(event, 'submit-waste')">Submit</a></li><li><a href="#" onclick="navigate(event, 'impact')">Dashboard</a></li></ul></div>
-                <div class="footer-col"><h4>Resources</h4><ul><li><a href="#">About Us</a></li><li><a href="#">Recycling Guides</a></li></ul></div>
-                <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li></ul></div>
+                <div class="footer-col"><h4>Platform</h4><ul><li><a href="#" onclick="navigate(event, 'submit-waste')">Submit Waste</a></li><li><a href="#" onclick="navigate(event, 'impact')">Live Dashboard</a></li></ul></div>
+                <div class="footer-col"><h4>Resources</h4><ul><li><a href="#">Recycling Guide</a></li><li><a href="#">Facility Map</a></li></ul></div>
+                <div class="footer-col"><h4>Contact</h4><ul><li><a href="#">support@ecocircuit.in</a></li><li><a href="#">Gwalior, MP, India</a></li></ul></div>
             </div>
-            <div style="text-align: center; margin-top: 3rem; color: #9CA3AF; font-size: 0.8rem;">© 2026 EcoCircuit. All rights reserved.</div>
+            <div style="text-align: center; margin-top: 3rem; color: #9CA3AF; font-size: 0.8rem;">© 2026 EcoCircuit. Built for Hack2Skill.</div>
         </footer>
+    </section>
+
+    <section id="rewards" class="container" style="padding: 4rem 0;">
+        <div class="calc-header">
+            <span style="color:#F59E0B; font-weight:600; font-size:0.9rem;">🎁 Rewards Store</span>
+            <h2>Redeem Your Green Points</h2>
+            <p style="color:var(--text-gray);">Use points earned from daily visits and recycling to get exclusive coupons.</p>
+        </div>
+        <div style="background:#FEF3C7; padding:1.5rem; border-radius:16px; margin-bottom:3rem; text-align:center; border:1px solid #FCD34D;">
+            <span style="font-weight:700; color:#B45309; font-size:1.1rem;">Your Balance:</span> 
+            <span id="store-points" style="font-weight:800; font-size:2rem; color:#D97706; margin: 0 10px;">0</span> 
+            <span style="font-weight:700; color:#B45309; font-size:1.1rem;">Points</span>
+        </div>
+        
+        <div class="coupon-grid">
+            <div class="coupon-card">
+                <div class="coupon-img">🛒</div>
+                <div class="coupon-content">
+                    <h3>Amazon ₹100 Voucher</h3>
+                    <p style="font-size:0.9rem; color:#666; margin-bottom:1rem;">Get ₹100 off on your next eco-friendly purchase.</p>
+                    <span class="coupon-cost">500 Pts</span>
+                    <button class="btn btn-primary btn-full" onclick="redeemCoupon(500, this)">Redeem</button>
+                    <div class="coupon-code">AMZ-ECO-2026</div>
+                </div>
+            </div>
+            <div class="coupon-card">
+                <div class="coupon-img">🍔</div>
+                <div class="coupon-content">
+                    <h3>Swiggy 20% Off</h3>
+                    <p style="font-size:0.9rem; color:#666; margin-bottom:1rem;">Discount on healthy food orders above ₹200.</p>
+                    <span class="coupon-cost">300 Pts</span>
+                    <button class="btn btn-primary btn-full" onclick="redeemCoupon(300, this)">Redeem</button>
+                    <div class="coupon-code">SWIGGY-GREEN</div>
+                </div>
+            </div>
+            <div class="coupon-card">
+                <div class="coupon-img">🎧</div>
+                <div class="coupon-content">
+                    <h3>Boat 15% Off</h3>
+                    <p style="font-size:0.9rem; color:#666; margin-bottom:1rem;">Discount on refurbished electronics.</p>
+                    <span class="coupon-cost">800 Pts</span>
+                    <button class="btn btn-primary btn-full" onclick="redeemCoupon(800, this)">Redeem</button>
+                    <div class="coupon-code">BOAT-RENEW</div>
+                </div>
+            </div>
+             <div class="coupon-card">
+                <div class="coupon-img">☕</div>
+                <div class="coupon-content">
+                    <h3>Starbucks Free Coffee</h3>
+                    <p style="font-size:0.9rem; color:#666; margin-bottom:1rem;">Get a free tall latte when you bring your own cup.</p>
+                    <span class="coupon-cost">1000 Pts</span>
+                    <button class="btn btn-primary btn-full" onclick="redeemCoupon(1000, this)">Redeem</button>
+                    <div class="coupon-code">STAR-BYOC-26</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="community" class="container" style="padding: 4rem 0;">
+        <div class="calc-header">
+            <span style="color:#3B82F6; font-weight:600; font-size:0.9rem;">🤝 Community Hub</span>
+            <h2>Connect & Collaborate</h2>
+            <p style="color:var(--text-gray);">Join local drives, discuss e-waste solutions, and climb the leaderboard.</p>
+        </div>
+
+        <div class="comm-grid">
+            <div class="comm-main">
+                <h3 style="margin-bottom:1.5rem;">Discussion Forum</h3>
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="avatar" style="background:#e0f2fe; color:#0369a1;">TG</div>
+                        <div>
+                            <div style="font-weight:700;">Tanmay Goyal</div>
+                            <div style="font-size:0.8rem; color:#666;">1 hours ago • Gwalior</div>
+                        </div>
+                    </div>
+                    <p>Has anyone used the new pickup service from Prometheus Recycling? Is it really free for bulk items like washing machines?</p>
+                    <div style="margin-top:1rem; display:flex; gap:1rem; font-size:0.9rem; color:#666;">
+                        <span style="cursor:pointer;" onclick="alert('Comments coming soon!')">💬 4 Comments</span> 
+                        <span style="cursor:pointer;" onclick="this.innerHTML='❤️ 13 Likes'; this.style.color='red';">❤️ 12 Likes</span>
+                    </div>
+                </div>
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="avatar" style="background:#fce7f3; color:#be185d;">DB</div>
+                        <div>
+                            <div style="font-weight:700;">Daksh Bansal</div>
+                            <div style="font-size:0.8rem; color:#666;">2 hours ago • Gwalior</div>
+                        </div>
+                    </div>
+                    <p>Just dropped off my old laptop at the Kabad Factory center. They gave me a certificate of recycling instantly! Highly recommend.</p>
+                    <div style="margin-top:1rem; display:flex; gap:1rem; font-size:0.9rem; color:#666;">
+                        <span style="cursor:pointer;" onclick="alert('Comments coming soon!')">💬 2 Comments</span> 
+                        <span style="cursor:pointer;" onclick="this.innerHTML='❤️ 9 Likes'; this.style.color='red';">❤️ 8 Likes</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comm-sidebar">
+                <h3 style="margin-bottom:1.5rem;">Social Connect</h3>
+                <div class="social-grid">
+                    <a href="https://discord.com" target="_blank" class="social-btn discord-color">
+                        <i class="fab fa-discord social-icon"></i>
+                        <span style="font-size:0.8rem; font-weight:600;">Discord</span>
+                    </a>
+                    <a href="https://instagram.com" target="_blank" class="social-btn insta-color">
+                        <i class="fab fa-instagram social-icon"></i>
+                        <span style="font-size:0.8rem; font-weight:600;">Instagram</span>
+                    </a>
+                    <a href="https://whatsapp.com" target="_blank" class="social-btn wa-color">
+                        <i class="fab fa-whatsapp social-icon"></i>
+                        <span style="font-size:0.8rem; font-weight:600;">WhatsApp</span>
+                    </a>
+                </div>
+
+                <h3 style="margin: 1.5rem 0;">Upcoming Drives</h3>
+                <div class="event-card">
+                    <div style="font-size:0.8rem; opacity:0.9; margin-bottom:0.5rem; font-weight:700;">FEB 15 • GWALIOR</div>
+                    <h4 style="font-size:1.1rem; margin-bottom:0.5rem;">City Center E-Drive</h4>
+                    <p style="font-size:0.9rem; opacity:0.9; margin-bottom:1rem;">Bulk collection drive at City Center Mall. Bring your old batteries.</p>
+                    <button class="btn btn-sm btn-white" style="color:var(--primary);" onclick="this.innerText='✅ Registered'; this.disabled=true;">I'm Going</button>
+                </div>
+
+                <div style="background:white; border:1px solid #eee; padding:1.5rem; border-radius:12px;">
+                    <h4 style="margin-bottom:1rem;">Top Contributors</h4>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.8rem; font-size:0.9rem;">
+                        <span>1. Tanmay Goyal</span> <span style="font-weight:700; color:#10B981;">1000 pts</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.8rem; font-size:0.9rem;">
+                        <span>2. Tanya Gupta</span> <span style="font-weight:700; color:#10B981;">980 pts</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.8rem; font-size:0.9rem;">
+                        <span>3. Ayushi Choudhary</span> <span style="font-weight:700; color:#10B981;">860 pts</span> 
+    
+                    </div>
+                   <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+                        <span>4. Daksh Bansal</span> <span style="font-weight:700; color:#10B981;">850 pts</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <section id="calculator" class="container" style="padding: 4rem 0;">
         <div class="calc-header">
             <span style="color:#F59E0B; font-weight:600; font-size:0.9rem;">🧮 Impact Calculator</span>
-            <h2>Calculate Your Potential Impact</h2>
-            <p style="color:var(--text-gray);">Comprehensive data for ICT, Home Electronics, and Appliances.</p>
+            <h2>Calculate Your Contribution</h2>
+            <p style="color:var(--text-gray);">Estimate the environmental impact of recycling your specific devices.</p>
         </div>
         <div class="calc-grid">
             <div class="calc-card">
-                <h3 style="margin-bottom:1.5rem; font-family:monospace; font-size:1.25rem;">Enter Your Devices</h3>
+                <h3 style="margin-bottom:1.5rem; font-size:1.25rem;">Enter Device Details</h3>
                 <div class="form-group">
                     <label class="form-label">Device Type <span style="color:red">*</span></label>
                     <select class="form-select" id="calc-device"></select>
@@ -333,26 +472,22 @@
                     <label class="form-label">Quantity <span style="color:red">*</span></label>
                     <input type="number" class="form-input" id="calc-qty" value="1" min="1">
                 </div>
-                <div style="display:flex; gap:1rem; margin-top:2rem;">
-                    <button class="btn btn-primary" style="flex:1" onclick="calculateImpact()">Calculate Impact</button>
-                    <button class="btn btn-outline" style="flex:1" onclick="resetCalculator()">↻ Reset</button>
-                </div>
+                <button class="btn btn-primary btn-full" onclick="calculateImpact()">Calculate Impact</button>
+                <button class="btn btn-outline btn-full" style="margin-top:10px;" onclick="resetCalculator()">Reset</button>
             </div>
             <div class="calc-card">
                 <div id="calc-empty" class="result-empty">
-                    <div style="font-size:4rem; margin-bottom:1rem; opacity:0.3; background:#f3f4f6; width:100px; height:100px; border-radius:50%; display:flex; align-items:center; justify-content:center;">🍃</div>
-                    <h3 style="color:var(--dark); margin-bottom:0.5rem; font-family:monospace;">Your Impact Results</h3>
-                    <p style="font-size:0.9rem;">Select a device type and quantity.</p>
+                    <div style="font-size:4rem; margin-bottom:1rem; opacity:0.3;">🍃</div>
+                    <h3>Impact Results</h3>
+                    <p>Select a device to see your savings.</p>
                 </div>
                 <div id="calc-filled" class="result-filled">
-                    <h3 style="margin-bottom:1.5rem; font-family:monospace; text-align:center;">Estimated Savings</h3>
-                    <div class="res-row"><div class="res-label"><span style="font-size:1.5rem;">🍃</span> CO₂ Emissions</div><div class="res-val" id="res-co2">0 kg</div></div>
-                    <div class="res-row"><div class="res-label"><span style="font-size:1.5rem;">🌳</span> Trees Planted</div><div class="res-val" id="res-tree">0</div></div>
-                    <div class="res-row"><div class="res-label"><span style="font-size:1.5rem;">⚡</span> Energy Saved</div><div class="res-val" id="res-energy">0 kWh</div></div>
-                    <div class="res-row"><div class="res-label"><span style="font-size:1.5rem;">💧</span> Water Saved</div><div class="res-val" id="res-water">0 L</div></div>
-                    <div style="margin-top:2rem; text-align:center;">
-                        <button class="btn btn-primary btn-sm" onclick="navigate(event, 'submit-waste')">Recycle This Item Now →</button>
-                    </div>
+                    <h3 style="margin-bottom:1.5rem; text-align:center;">Estimated Savings</h3>
+                    <div class="res-row"><div class="res-label">🍃 CO₂ Emissions</div><div class="res-val" id="res-co2">0 kg</div></div>
+                    <div class="res-row"><div class="res-label">🌳 Trees Equivalent</div><div class="res-val" id="res-tree">0</div></div>
+                    <div class="res-row"><div class="res-label">⚡ Energy Saved</div><div class="res-val" id="res-energy">0 kWh</div></div>
+                    <div class="res-row"><div class="res-label">💧 Water Saved</div><div class="res-val" id="res-water">0 L</div></div>
+                    <button class="btn btn-primary btn-full" style="margin-top:2rem;" onclick="navigate(event, 'submit-waste')">Recycle This Item Now</button>
                 </div>
             </div>
         </div>
@@ -360,153 +495,97 @@
 
     <section id="submit-waste" class="container" style="padding: 4rem 0;">
         <div class="calc-header">
-            <h2>Submit E-Waste</h2>
-            <p>Help us build a sustainable future by responsibly recycling.</p>
+            <h2>Submit E-Waste Request</h2>
+            <p>Schedule a pickup from your home in Gwalior.</p>
         </div>
         <div class="stepper">
-            <div class="step active" id="step-indicator-1"><div class="step-circle">1</div><span class="step-label">Category</span></div>
-            <div class="step" id="step-indicator-2"><div class="step-circle">2</div><span class="step-label">Details</span></div>
-            <div class="step" id="step-indicator-3"><div class="step-circle">3</div><span class="step-label">Photos</span></div>
-            <div class="step" id="step-indicator-4"><div class="step-circle">4</div><span class="step-label">Location</span></div>
-            <div class="step" id="step-indicator-5"><div class="step-circle">5</div><span class="step-label">Review</span></div>
+            <div class="step active" id="step-indicator-1"><div class="step-circle">1</div><span style="font-size:0.8rem; margin-top:5px;">Category</span></div>
+            <div class="step" id="step-indicator-2"><div class="step-circle">2</div><span style="font-size:0.8rem; margin-top:5px;">Details</span></div>
+            <div class="step" id="step-indicator-3"><div class="step-circle">3</div><span style="font-size:0.8rem; margin-top:5px;">Address</span></div>
+            <div class="step" id="step-indicator-4"><div class="step-circle">4</div><span style="font-size:0.8rem; margin-top:5px;">Done</span></div>
         </div>
         <div class="wizard-card">
             <div id="step-content-1">
                 <div class="category-grid">
-                    <div class="category-option" onclick="selectCategory(this, 'ICT')"><span class="cat-icon">💻</span><span class="cat-name">ICT / Computers</span></div>
-                    <div class="category-option" onclick="selectCategory(this, 'Mobile')"><span class="cat-icon">📱</span><span class="cat-name">Mobile / Phones</span></div>
-                    <div class="category-option" onclick="selectCategory(this, 'Consumer')"><span class="cat-icon">📺</span><span class="cat-name">Consumer Electronics</span></div>
+                    <div class="category-option" onclick="selectCategory(this, 'ICT')"><span class="cat-icon">💻</span><span class="cat-name">Computers/Laptops</span></div>
+                    <div class="category-option" onclick="selectCategory(this, 'Mobile')"><span class="cat-icon">📱</span><span class="cat-name">Mobile/Tablets</span></div>
+                    <div class="category-option" onclick="selectCategory(this, 'Consumer')"><span class="cat-icon">📺</span><span class="cat-name">TVs/Monitors</span></div>
                     <div class="category-option" onclick="selectCategory(this, 'LargeApp')"><span class="cat-icon">❄️</span><span class="cat-name">Large Appliances</span></div>
                     <div class="category-option" onclick="selectCategory(this, 'SmallApp')"><span class="cat-icon">🍞</span><span class="cat-name">Small Appliances</span></div>
-                    <div class="category-option" onclick="selectCategory(this, 'Other')"><span class="cat-icon">🔌</span><span class="cat-name">Tools / Other</span></div>
                 </div>
             </div>
             <div id="step-content-2" class="hidden">
-                <div class="form-group"><label class="form-label">Specific Item</label><input type="text" class="form-input" placeholder="e.g. Dell Monitor, Fridge, Microwave"></div>
-                <div class="form-group"><label class="form-label">Condition</label><select class="form-select"><option>Working</option><option>Broken</option><option>For Parts</option></select></div>
-            </div>
-            <div id="step-content-3" class="hidden">
+                <div class="form-group"><label class="form-label">Item Description</label><input type="text" class="form-input" placeholder="e.g. Dell Inspiron 15, Broken Screen"></div>
+                <div class="form-group"><label class="form-label">Condition</label><select class="form-select"><option>Working</option><option>Repairable</option><option>Scrap/Broken</option></select></div>
                 <div class="upload-area" onclick="document.getElementById('file-input').click()">
-                    <div style="font-size:3rem;">📷</div><h3>Click or Drag photos here</h3>
+                    <div style="font-size:2rem;">📷</div><p>Upload Photos (Optional)</p>
                     <input type="file" id="file-input" multiple accept="image/*" style="display:none;" onchange="handleFiles(this.files)">
                 </div>
                 <div class="preview-container" id="gallery"></div>
             </div>
-            <div id="step-content-4" class="hidden">
-                <div class="form-group"><label class="form-label">Address</label><input type="text" class="form-input"></div>
+            <div id="step-content-3" class="hidden">
+                <div class="form-group"><label class="form-label">Pickup Address</label><input type="text" class="form-input" value="Institute of Technology & Management, Gwalior"></div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-                    <div class="form-group"><label class="form-label">City</label><input type="text" class="form-input"></div>
-                    <div class="form-group"><label class="form-label">Zip Code</label><input type="text" class="form-input"></div>
+                    <div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" value="Gwalior"></div>
+                    <div class="form-group"><label class="form-label">ZIP</label><input type="text" class="form-input" value="474001"></div>
+                </div>
+                <div class="form-group"><label class="form-label">Contact Number</label><input type="text" class="form-input" placeholder="+91"></div>
+            </div>
+            <div id="step-content-4" class="hidden">
+                <div style="text-align:center; padding: 2rem 0;">
+                    <div style="font-size:4rem; margin-bottom:1rem;">✅</div>
+                    <h3>Request Submitted Successfully!</h3>
+                    <p>Your pickup ID is <b id="pickup-id">#EC-2026-889</b></p>
+                    <div style="background:#ECFDF5; padding:1rem; border-radius:12px; margin-top:2rem; border:1px solid #10B981; color:#065F46;">
+                        <h4 style="margin:0; font-size:1.2rem;">🎉 You Earned 100 Points!</h4>
+                        <p style="margin:0; font-size:0.9rem;">Check your wallet in the Rewards section.</p>
+                    </div>
                 </div>
             </div>
-            <div id="step-content-5" class="hidden">
-                <div style="text-align:center;"><div style="font-size:4rem;">✅</div><p>Ready to submit request for <b id="summary-cat">Device</b>.</p></div>
-            </div>
-            <div style="margin-top: 2rem; display: flex; justify-content: space-between;">
+            
+            <div style="margin-top: 2rem; display: flex; justify-content: space-between; border-top:1px solid #eee; padding-top:1rem;">
                 <button class="btn btn-outline" id="prev-btn" onclick="changeStep(-1)" style="display:none;">Back</button>
-                <button class="btn btn-primary" id="next-btn" style="width:100%;" onclick="changeStep(1)">Continue ></button>
+                <button class="btn btn-primary" id="next-btn" style="margin-left:auto;" onclick="changeStep(1)">Continue</button>
             </div>
         </div>
     </section>
 
     <section id="solutions" class="container" style="padding: 3rem 0;">
         <div class="solutions-header">
-            <span style="color:#10B981; font-weight:600; font-size:0.9rem;">📍 Find Recycling Solutions Near You</span>
-            <h2 style="font-size: 2.5rem; margin: 0.5rem 0 1rem 0;">Solutions Map</h2>
-            <p>Discover certified recycling facilities, drop-off points, and community initiatives in your area. Making responsible e-waste disposal accessible to everyone.</p>
-        </div>
-
-        <div class="solutions-stats">
-            <div class="s-stat-card">
-                <div class="s-stat-icon icon-fac">🏭</div>
-                <div class="s-stat-label">Total Facilities</div>
-                <div class="s-stat-val">1,247</div>
-            </div>
-            <div class="s-stat-card">
-                <div class="s-stat-icon icon-part">🤝</div>
-                <div class="s-stat-label">Certified Partners</div>
-                <div class="s-stat-val">892</div>
-            </div>
-            <div class="s-stat-card">
-                <div class="s-stat-icon icon-cit">🏙️</div>
-                <div class="s-stat-label">Cities Covered</div>
-                <div class="s-stat-val">156</div>
-            </div>
-            <div class="s-stat-card">
-                <div class="s-stat-icon icon-usr">👥</div>
-                <div class="s-stat-label">Active Users</div>
-                <div class="s-stat-val">45.2K</div>
-            </div>
+            <span style="color:#10B981; font-weight:600; font-size:0.9rem;">📍 Find Recycling Solutions</span>
+            <h2 style="font-size: 2.5rem; margin: 0.5rem 0 1rem 0;">All India Recycling Network</h2>
+            <p>Authorized e-waste recyclers across Madhya Pradesh, Delhi, Maharashtra, and Karnataka.</p>
         </div>
 
         <div class="solutions-layout">
             <aside class="s-sidebar">
-                <div class="s-filter-header">
-                    <span class="s-filter-title">Filters</span>
-                    <a href="#" style="font-size:0.85rem; color:var(--primary); text-decoration:none;">Reset</a>
-                </div>
-
-                <div class="s-filter-group">
-                    <label class="s-label">Search Location</label>
-                    <div class="s-input-group">
-                        <span class="s-search-icon">🔍</span>
-                        <input type="text" class="s-input" placeholder="Enter city, zip code...">
-                    </div>
-                </div>
-
-                <div class="s-filter-group">
-                    <label class="s-label">Facility Type</label>
-                    <select class="s-select">
-                        <option>All Types</option>
-                        <option>Recycling Center</option>
-                        <option>Drop-off Point</option>
-                        <option>Retail Partner</option>
-                    </select>
-                </div>
-
-                <div class="s-filter-group">
-                    <label class="s-label">Distance</label>
-                    <select class="s-select">
-                        <option>Within 10 miles</option>
-                        <option>Within 25 miles</option>
-                        <option>Within 50 miles</option>
-                    </select>
-                </div>
+                <div style="margin-bottom:1.5rem; font-weight:700;">Filter Locations</div>
                 
-                <div class="s-filter-group">
-                    <label class="s-label">Sort By</label>
-                    <select class="s-select">
-                        <option>Nearest first</option>
-                        <option>Highest Rated</option>
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-size:0.9rem;">State</label>
+                    <select class="s-input" id="state-filter" onchange="filterSolutions()">
+                        <option value="">All States</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Delhi">Delhi NCR</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
                     </select>
                 </div>
 
-                <div class="s-filter-group">
-                    <label class="s-label">Accepted Items</label>
-                    <div class="s-checkbox-group">
-                        <label class="s-checkbox"><input type="checkbox" checked> Computers & Laptops</label>
-                        <label class="s-checkbox"><input type="checkbox" checked> Mobile Phones</label>
-                        <label class="s-checkbox"><input type="checkbox"> Batteries</label>
-                        <label class="s-checkbox"><input type="checkbox"> Cables & Accessories</label>
-                    </div>
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-size:0.9rem;">Search City/Area</label>
+                    <input type="text" class="s-input" id="search-input" placeholder="e.g. Gwalior, Mumbai..." onkeyup="filterSolutions()">
                 </div>
 
-                <div class="s-filter-group">
-                    <label class="s-label">Features</label>
-                    <div class="s-checkbox-group">
-                        <label class="s-checkbox"><input type="checkbox"> Certified Facilities Only</label>
-                        <label class="s-checkbox"><input type="checkbox"> Open Now</label>
-                        <label class="s-checkbox"><input type="checkbox"> Free Service</label>
-                        <label class="s-checkbox"><input type="checkbox"> Pickup Available</label>
-                    </div>
+                <div style="margin-bottom:1rem;">
+                     <label style="display:flex; gap:0.5rem; font-size:0.9rem; align-items:center;"><input type="checkbox" checked> Verified Partners</label>
                 </div>
             </aside>
 
             <div class="s-main">
-                <div style="margin-bottom:1rem; font-size:0.9rem; color:#6B7280; text-align:right;">
-                    📍 Showing facilities relative to Gwalior, MP
-                </div>
-                <div class="s-grid" id="solutions-list">
+                <div id="solutions-list">
                     </div>
             </div>
         </div>
@@ -515,434 +594,354 @@
     <section id="impact" class="container" style="padding: 4rem 0;">
         <div class="dashboard-header">
             <div class="dashboard-title">
-                <h2>Global Impact Dashboard</h2>
-                <p>Real-time visualization of our collective environmental progress</p>
+                <h2>Hello, Tanmay 👋</h2>
+                <p>Real-time Global E-Waste Statistics (Source: GEM 2024)</p>
             </div>
             <div class="header-actions">
-                <button class="btn btn-outline" onclick="exportReport()">↓ Export Report</button>
-                <button class="btn btn-primary" onclick="shareImpact()">Share Impact</button>
+                <button class="btn btn-outline" onclick="alert('Exporting PDF Report...')">↓ Export Report</button>
+                <button class="btn btn-primary" onclick="alert('Link copied to clipboard!')">Share Impact</button>
             </div>
         </div>
+        
         <div class="live-panel">
-            <div style="display:flex; align-items:center; gap:0.5rem; color:#6B7280; margin-bottom:1.5rem;">
-                <div style="width:10px; height:10px; background:#10B981; border-radius:50%; animation:pulse 2s infinite;"></div> Live Updates
+            <div style="display:flex; align-items:center; gap:0.5rem; color:#EF4444; margin-bottom:1.5rem; font-weight:700;">
+                <div style="width:10px; height:10px; background:#EF4444; border-radius:50%; animation:pulse 1s infinite;"></div> LIVE: Global Generation
             </div>
             <div class="live-stats-row">
-                <div class="live-stat"><h4>Devices Today</h4><div class="value" id="today-devices">+111</div></div>
-                <div class="live-stat"><h4>CO₂ Saved Today</h4><div class="value green" id="today-co2">+580kg</div></div>
-                <div class="live-stat"><h4>Active Now</h4><div class="value green" id="active-now">26</div></div>
-                <div class="live-stat"><h4>This Hour</h4><div class="value orange" id="this-hour">+29</div></div>
+                <div class="live-stat"><h4>E-Waste Generated (This Year)</h4><div class="value" id="global-waste-kg">0</div><div style="font-size:0.8rem; color:#666;">kg</div></div>
+                <div class="live-stat"><h4>E-Waste Generated (Today)</h4><div class="value orange" id="today-waste-kg">0</div><div style="font-size:0.8rem; color:#666;">kg</div></div>
+                <div class="live-stat"><h4>Recycled Formally (22.3%)</h4><div class="value green" id="recycled-waste-kg">0</div><div style="font-size:0.8rem; color:#666;">kg</div></div>
             </div>
+            <p style="margin-top:1rem; font-size:0.8rem; color:#999;">*Estimates based on 62 Billion kg annual generation (1,966 kg/sec).</p>
         </div>
+
         <div class="main-stats-grid">
-            <div class="stat-card-new"><div class="trend">↗ +12.5%</div><div class="card-icon icon-device">📱</div><h3>Total Devices Collected</h3><div class="big-num" id="total-devices">0</div><span class="unit">devices</span></div>
-            <div class="stat-card-new"><div class="trend">↗ +8.3%</div><div class="card-icon icon-leaf">🍃</div><h3>CO₂ Emissions Prevented</h3><div class="big-num" id="total-co2">0</div><span class="unit">kg</span></div>
-            <div class="stat-card-new"><div class="trend">↗ +15.7%</div><div class="card-icon icon-users">👥</div><h3>Active Contributors</h3><div class="big-num" id="total-users">0</div><span class="unit">users</span></div>
-            <div class="stat-card-new"><div class="trend">↗ +5.2%</div><div class="card-icon icon-loc">📍</div><h3>Recycling Centers</h3><div class="big-num" id="total-centers">0</div><span class="unit">locations</span></div>
+            <div class="stat-card-new"><div class="trend">↗ +12%</div><div class="card-icon icon-device">📱</div><h3>Your Submissions</h3><div class="big-num">12</div><span class="unit">devices</span></div>
+            <div class="stat-card-new"><div class="trend">↗ +8%</div><div class="card-icon icon-leaf">🍃</div><h3>CO₂ Saved</h3><div class="big-num">48.5</div><span class="unit">kg</span></div>
+            <div class="stat-card-new"><div class="card-icon icon-users">👥</div><h3>Community Rank</h3><div class="big-num">#42</div><span class="unit">in Gwalior</span></div>
         </div>
     </section>
 
     <script>
         // --- 1. CONFIGURATION & DATABASE ---
-        
-        // Expanded Database with User's Categories (ICT, Consumer, Appliances, etc.)
-        const eWasteDB = {
-            // --- ICT ---
-            'desktop': { name: 'Desktop PC', category: 'ICT', impact: { co2: '22.0', tree: '1.8', energy: '28.0', water: '210' } },
-            'laptop': { name: 'Laptop', category: 'ICT', impact: { co2: '15.5', tree: '1.2', energy: '22.0', water: '190' } },
-            'tablet': { name: 'Tablet', category: 'ICT', impact: { co2: '8.5', tree: '0.6', energy: '10.5', water: '90' } },
-            'phone': { name: 'Smartphone', category: 'ICT', impact: { co2: '3.2', tree: '0.2', energy: '3.8', water: '48' } },
-            'monitor': { name: 'Monitor (LCD/CRT)', category: 'ICT', impact: { co2: '9.2', tree: '0.6', energy: '14.5', water: '80' } },
-            'printer': { name: 'Printer/Scanner', category: 'ICT', impact: { co2: '12.0', tree: '0.9', energy: '18.0', water: '120' } },
-            'keyboard': { name: 'Keyboard', category: 'ICT', impact: { co2: '1.5', tree: '0.1', energy: '1.2', water: '12' } },
-            'mouse': { name: 'Mouse', category: 'ICT', impact: { co2: '0.8', tree: '0.05', energy: '0.9', water: '8' } },
-            'router': { name: 'Router/Modem', category: 'ICT', impact: { co2: '2.5', tree: '0.2', energy: '4.0', water: '20' } },
-            'harddrive': { name: 'Hard Drive/Storage', category: 'ICT', impact: { co2: '0.5', tree: '0.04', energy: '0.8', water: '5' } },
+        // EXPANDED All-India Database
+        const facilitiesDB = [
+            // Madhya Pradesh (Gwalior, Indore, Bhopal)
+            { name: "Prometheus Recycling Pvt Ltd", state: "Madhya Pradesh", city: "Gwalior", address: "Plot No. 786/4, Susera, Gwalior, MP", type: "Authorized Recycler", rating: 4.8, icon: "🏭", verified: true },
+            { name: "Kabad Factory", state: "Madhya Pradesh", city: "Gwalior", address: "Chambal Colony, Thatipur, Gwalior, MP", type: "Collection Center", rating: 4.9, icon: "♻️", verified: true },
+            { name: "Unique Eco Recycle", state: "Madhya Pradesh", city: "Gwalior", address: "Transport Nagar, Gwalior, MP", type: "Regional Recycler", rating: 4.6, icon: "🚛", verified: true },
+            { name: "MP E-Waste Solutions", state: "Madhya Pradesh", city: "Indore", address: "Sanwer Road, Industrial Area, Indore, MP", type: "Processing Plant", rating: 4.7, icon: "🏭", verified: true },
+            { name: "Bhopal Green Recyclers", state: "Madhya Pradesh", city: "Bhopal", address: "Govindpura Industrial Area, Bhopal, MP", type: "Authorized Recycler", rating: 4.5, icon: "♻️", verified: true },
 
-            // --- CONSUMER ELECTRONICS ---
-            'tv': { name: 'Television', category: 'Consumer', impact: { co2: '18.0', tree: '1.4', energy: '25.0', water: '150' } },
-            'camera': { name: 'Camera/Video', category: 'Consumer', impact: { co2: '5.0', tree: '0.4', energy: '6.0', water: '40' } },
-            'audio': { name: 'Audio/Stereo Eq.', category: 'Consumer', impact: { co2: '7.5', tree: '0.5', energy: '9.0', water: '60' } },
-            'remote': { name: 'Remote Control', category: 'Consumer', impact: { co2: '0.3', tree: '0.02', energy: '0.4', water: '2' } },
+            // Delhi NCR
+            { name: "Attero Recycling Pvt Ltd", state: "Delhi", city: "Noida", address: "H-59, Sector 63, Noida, UP", type: "India's Largest Recycler", rating: 4.9, icon: "🏭", verified: true },
+            { name: "Karo Sambhav", state: "Delhi", city: "New Delhi", address: "408, 4th Floor, New Delhi House, Barakhamba Rd", type: "PRO / Collection", rating: 4.8, icon: "🤝", verified: true },
+            { name: "Chintan Environmental", state: "Delhi", city: "New Delhi", address: "C-14, 2nd Floor, Lajpat Nagar III, New Delhi", type: "NGO / Collection", rating: 4.6, icon: "🌱", verified: true },
 
-            // --- LARGE APPLIANCES ---
-            'refrigerator': { name: 'Refrigerator', category: 'Large Appl.', impact: { co2: '45.0', tree: '3.5', energy: '150.0', water: '400' } },
-            'washing_machine': { name: 'Washing Machine', category: 'Large Appl.', impact: { co2: '35.0', tree: '2.8', energy: '120.0', water: '300' } },
-            'oven': { name: 'Oven/Stove', category: 'Large Appl.', impact: { co2: '30.0', tree: '2.4', energy: '100.0', water: '250' } },
-            'microwave': { name: 'Microwave', category: 'Large Appl.', impact: { co2: '12.0', tree: '0.9', energy: '40.0', water: '80' } },
-            'fan': { name: 'Fan/AC Unit', category: 'Large Appl.', impact: { co2: '8.0', tree: '0.6', energy: '25.0', water: '50' } },
+            // Maharashtra (Mumbai, Pune)
+            { name: "Eco Recycling Ltd (Ecoreco)", state: "Maharashtra", city: "Mumbai", address: "422, The Summit Business Bay, Andheri East, Mumbai", type: "Corporate Recycler", rating: 4.7, icon: "🏢", verified: true },
+            { name: "JustDispose", state: "Maharashtra", city: "Mumbai", address: "Kanjurmarg East, Mumbai, Maharashtra", type: "Pickup Service", rating: 4.5, icon: "🚚", verified: true },
+            { name: "Poornam Ecovision", state: "Maharashtra", city: "Pune", address: "Survey No 29, Dhankawadi, Pune", type: "NGO / Collection", rating: 4.8, icon: "♻️", verified: true },
 
-            // --- SMALL APPLIANCES & TOOLS ---
-            'toaster': { name: 'Toaster', category: 'Small Appl.', impact: { co2: '4.0', tree: '0.3', energy: '8.0', water: '20' } },
-            'kettle': { name: 'Electric Kettle', category: 'Small Appl.', impact: { co2: '3.5', tree: '0.25', energy: '7.0', water: '18' } },
-            'hair_dryer': { name: 'Hair Dryer', category: 'Small Appl.', impact: { co2: '2.0', tree: '0.15', energy: '5.0', water: '15' } },
-            'tool': { name: 'Power Tool', category: 'Small Appl.', impact: { co2: '6.0', tree: '0.5', energy: '12.0', water: '40' } },
+            // Karnataka (Bangalore)
+            { name: "Sogo Synergies", state: "Karnataka", city: "Bangalore", address: "Plot No. D-22, KIADB Industrial Area, Bangalore", type: "Processing Facility", rating: 4.6, icon: "🏭", verified: true },
+            { name: "E-Parisaraa", state: "Karnataka", city: "Bangalore", address: "Dobaspet Industrial Area, Bangalore Rural", type: "Authorized Recycler", rating: 4.7, icon: "♻️", verified: true },
 
-            // --- OTHER ---
-            'battery': { name: 'Battery (Li-ion)', category: 'Other', impact: { co2: '0.5', tree: '0.04', energy: '1.0', water: '5' } },
-            'toy': { name: 'Electronic Toy', category: 'Other', impact: { co2: '1.5', tree: '0.1', energy: '2.0', water: '10' } },
-            'medical': { name: 'Medical Device', category: 'Other', impact: { co2: '10.0', tree: '0.8', energy: '15.0', water: '100' } },
-            'bottle': { name: 'Plastic/Waste', category: 'Recyclable', impact: { co2: '0.1', tree: '0.01', energy: '0.2', water: '3' } }
+            // Hyderabad & Chennai
+            { name: "Earth Sense Recycle", state: "Telangana", city: "Hyderabad", address: "Plot 37, APIIC Industrial Park, Hyderabad", type: "Recycling Plant", rating: 4.6, icon: "🏭", verified: true },
+            { name: "Tes-Amm India", state: "Tamil Nadu", city: "Chennai", address: "SIPCOT Industrial Growth Centre, Oragadam, Chennai", type: "Global Recycler", rating: 4.9, icon: "🌍", verified: true }
+        ];
+
+        // Impact Data
+        const impactDB = {
+            'laptop': { co2: 15.5, tree: 1.2, energy: 22 },
+            'phone': { co2: 3.2, tree: 0.2, energy: 3.8 },
+            'monitor': { co2: 9.2, tree: 0.6, energy: 14.5 },
+            'keyboard': { co2: 1.5, tree: 0.1, energy: 1.2 },
+            'mouse': { co2: 0.8, tree: 0.05, energy: 0.9 },
+            'tv': { co2: 18.0, tree: 1.4, energy: 25 },
+            'bottle': { co2: 0.1, tree: 0.01, energy: 0.2 }
         };
 
-        // AI Mapping: Maps standard COCO-SSD classes to our Database Keys
         const aiMap = {
-            'cell phone': 'phone',
-            'mobile phone': 'phone',
-            'laptop': 'laptop',
-            'mouse': 'mouse',
-            'keyboard': 'keyboard',
-            'tv': 'tv',
-            'monitor': 'monitor', 
-            'remote': 'remote',
-            'refrigerator': 'refrigerator',
-            'microwave': 'microwave',
-            'oven': 'oven',
-            'toaster': 'toaster',
-            'hair drier': 'hair_dryer',
-            'teddy bear': 'toy', // Proxy for toys
-            'scissors': 'tool', // Proxy for tools
-            'bottle': 'bottle'
+            'cell phone': 'phone', 'mobile phone': 'phone',
+            'laptop': 'laptop', 'mouse': 'mouse', 'keyboard': 'keyboard',
+            'tv': 'tv', 'monitor': 'monitor', 'bottle': 'bottle'
         };
 
-        // --- 2. SPA NAVIGATION ---
-        function navigate(event, sectionId) {
-            if(event) event.preventDefault();
-            document.querySelectorAll('section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
+        // --- 2. REWARDS LOGIC ---
+        function checkDailyReward() {
+            const lastRewardDate = localStorage.getItem('lastRewardDate');
+            const today = new Date().toDateString();
+            let currentPoints = parseInt(localStorage.getItem('ecoPoints')) || 1250; 
             
-            const navLink = document.getElementById('nav-' + sectionId);
-            if(navLink) navLink.classList.add('active');
-            
-            if(sectionId === 'impact') animateDashboard();
-            if(sectionId === 'home') window.scrollTo(0,0);
+            updatePointsDisplay(currentPoints);
+
+            if (lastRewardDate !== today) {
+                setTimeout(() => {
+                    document.getElementById('daily-reward-popup').classList.add('show');
+                }, 1500);
+            }
         }
 
-        // --- 3. IMPACT CALCULATOR LOGIC ---
+        function claimReward() {
+            const today = new Date().toDateString();
+            let currentPoints = parseInt(localStorage.getItem('ecoPoints')) || 1250;
+            
+            currentPoints += 50;
+            
+            localStorage.setItem('ecoPoints', currentPoints);
+            localStorage.setItem('lastRewardDate', today);
+            
+            updatePointsDisplay(currentPoints);
+            document.getElementById('daily-reward-popup').classList.remove('show');
+            alert("50 Points added to your wallet! 🎉");
+        }
+
+        function updatePointsDisplay(pts) {
+            document.getElementById('nav-points').innerText = `🏆 ${pts} Pts`;
+            if(document.getElementById('store-points')) document.getElementById('store-points').innerText = pts;
+        }
+
+        function redeemCoupon(cost, btnElement) {
+            let pts = parseInt(localStorage.getItem('ecoPoints')) || 1250;
+            if(pts >= cost) {
+                pts -= cost;
+                localStorage.setItem('ecoPoints', pts);
+                updatePointsDisplay(pts);
+                
+                // Reveal Code
+                btnElement.style.display = 'none';
+                const codeDiv = btnElement.nextElementSibling;
+                codeDiv.classList.add('revealed');
+                alert("Coupon Redeemed Successfully! 🎉");
+            } else {
+                alert("Not enough points! Recycle more items to earn points.");
+            }
+        }
+
+        // --- 3. NAVIGATION ---
+        function navigate(e, pageId) {
+            if(e) e.preventDefault();
+            document.querySelectorAll('section').forEach(el => el.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0,0);
+            
+            if(pageId === 'impact') startLiveCounter();
+        }
+
+        // --- 4. SOLUTIONS PAGE (FILTERING LOGIC) ---
+        function loadSolutions(filteredData) {
+            const container = document.getElementById('solutions-list');
+            if(!container) return;
+            container.innerHTML = '';
+
+            const dataToRender = filteredData || facilitiesDB;
+
+            if (dataToRender.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:2rem; color:#666;">No facilities found matching your criteria.</div>';
+                return;
+            }
+
+            dataToRender.forEach(fac => {
+                let badges = fac.verified ? `<span class="s-badge verified">✓ Verified</span>` : '';
+                let mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fac.name + ' ' + fac.address)}`;
+                
+                let html = `
+                    <div class="s-card">
+                        <div class="s-img-container">
+                            ${fac.icon}
+                            <div class="s-badge-container">${badges}</div>
+                        </div>
+                        <div class="s-card-content">
+                            <div style="display:flex; justify-content:space-between;">
+                                <h3 style="font-weight:700;">${fac.name}</h3>
+                                <span style="font-size:0.9rem; color:#F59E0B;">★ ${fac.rating}</span>
+                            </div>
+                            <p class="s-meta">📍 ${fac.city}, ${fac.state}</p>
+                            <p style="font-size:0.85rem; color:#666; margin-bottom:1rem;">${fac.address}</p>
+                            <div class="s-actions">
+                                <a href="${mapUrl}" target="_blank" class="btn btn-primary btn-sm btn-full" style="color:white; text-decoration:none;">Get Directions ↗</a>
+                                <button class="btn btn-outline btn-sm btn-full">Call Now</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        function filterSolutions() {
+            const stateVal = document.getElementById('state-filter').value;
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+
+            const filtered = facilitiesDB.filter(fac => {
+                const matchState = stateVal === "" || fac.state === stateVal;
+                const matchSearch = fac.city.toLowerCase().includes(searchVal) || 
+                                    fac.name.toLowerCase().includes(searchVal) ||
+                                    fac.address.toLowerCase().includes(searchVal);
+                return matchState && matchSearch;
+            });
+            loadSolutions(filtered);
+        }
+
+        // --- 5. LIVE DASHBOARD (REAL STATS) ---
+        let counterInterval;
+        function startLiveCounter() {
+            if(counterInterval) clearInterval(counterInterval);
+            const ratePerSec = 1966.05;
+            const startOfYear = new Date(new Date().getFullYear(), 0, 1).getTime();
+            const startOfDay = new Date().setHours(0,0,0,0);
+            
+            const update = () => {
+                const now = Date.now();
+                const secondsSinceYear = (now - startOfYear) / 1000;
+                const secondsSinceToday = (now - startOfDay) / 1000;
+                const wasteYear = secondsSinceYear * ratePerSec;
+                const wasteToday = secondsSinceToday * ratePerSec;
+                const recycled = wasteYear * 0.223; 
+
+                document.getElementById('global-waste-kg').innerText = Math.floor(wasteYear).toLocaleString();
+                document.getElementById('today-waste-kg').innerText = Math.floor(wasteToday).toLocaleString();
+                document.getElementById('recycled-waste-kg').innerText = Math.floor(recycled).toLocaleString();
+            };
+            update();
+            counterInterval = setInterval(update, 100);
+        }
+
+        // --- 6. CALCULATOR ---
         function initCalculator() {
             const select = document.getElementById('calc-device');
             if(!select) return;
-            
-            // Clear existing and repopulate sorted by category
-            select.innerHTML = '<option value="" disabled selected>Select a device</option>';
-            
-            // Group by category
-            const grouped = {};
-            for (const [key, val] of Object.entries(eWasteDB)) {
-                if (!grouped[val.category]) grouped[val.category] = [];
-                grouped[val.category].push({key, name: val.name});
-            }
-
-            for (const [cat, items] of Object.entries(grouped)) {
-                const optgroup = document.createElement('optgroup');
-                optgroup.label = cat;
-                items.forEach(item => {
-                    const opt = document.createElement('option');
-                    opt.value = item.key;
-                    opt.innerText = item.name;
-                    optgroup.appendChild(opt);
-                });
-                select.appendChild(optgroup);
+            select.innerHTML = '<option value="" disabled selected>Select Device</option>';
+            for (let key in impactDB) {
+                let opt = document.createElement('option');
+                opt.value = key;
+                opt.innerText = key.charAt(0).toUpperCase() + key.slice(1);
+                select.appendChild(opt);
             }
         }
 
         function calculateImpact() {
-            const deviceKey = document.getElementById('calc-device').value;
-            const qty = parseInt(document.getElementById('calc-qty').value) || 0;
+            const key = document.getElementById('calc-device').value;
+            const qty = document.getElementById('calc-qty').value;
+            if(!key || qty < 1) return alert("Please fill all fields");
 
-            if (!deviceKey) { alert("Please select a device type."); return; }
-            if (qty <= 0) { alert("Please enter a valid quantity."); return; }
+            const data = impactDB[key];
+            document.getElementById('res-co2').innerText = (data.co2 * qty).toFixed(1) + " kg";
+            document.getElementById('res-tree').innerText = (data.tree * qty).toFixed(1);
+            document.getElementById('res-energy').innerText = (data.energy * qty).toFixed(1) + " kWh";
+            document.getElementById('res-water').innerText = (qty * 10) + " L"; 
 
-            const data = eWasteDB[deviceKey];
-            if (data) {
-                const co2 = (parseFloat(data.impact.co2) * qty).toFixed(1);
-                const tree = (parseFloat(data.impact.tree) * qty).toFixed(1);
-                const energy = (parseFloat(data.impact.energy) * qty).toFixed(1);
-                const water = (parseFloat(data.impact.water) * qty).toFixed(1);
-
-                document.getElementById('res-co2').innerText = co2 + " kg";
-                document.getElementById('res-tree').innerText = tree;
-                document.getElementById('res-energy').innerText = energy + " kWh";
-                document.getElementById('res-water').innerText = water + " L";
-
-                document.getElementById('calc-empty').style.display = 'none';
-                document.getElementById('calc-filled').style.display = 'block';
-            }
+            document.getElementById('calc-empty').style.display = 'none';
+            document.getElementById('calc-filled').style.display = 'block';
         }
-
         function resetCalculator() {
+            document.getElementById('calc-empty').style.display = 'flex';
+            document.getElementById('calc-filled').style.display = 'none';
             document.getElementById('calc-device').selectedIndex = 0;
             document.getElementById('calc-qty').value = 1;
-            document.getElementById('calc-filled').style.display = 'none';
-            document.getElementById('calc-empty').style.display = 'flex';
         }
 
-        // --- 4. GENERAL UI LOGIC ---
-        document.addEventListener('DOMContentLoaded', () => {
-            initCalculator();
-
-            // Populate Solutions Map
-            const solContainer = document.getElementById('solutions-list');
-            if(solContainer) {
-                
-                // --- GEOLOCATION LOGIC ---
-                // Gwalior Coordinates: 26.2183° N, 78.1828° E
-                const originLat = 26.2183;
-                const originLng = 78.1828;
-
-                function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-                    var R = 6371; // Radius of the earth in km
-                    var dLat = deg2rad(lat2-lat1);  // deg2rad below
-                    var dLon = deg2rad(lon2-lon1); 
-                    var a = 
-                        Math.sin(dLat/2) * Math.sin(dLat/2) +
-                        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
-                    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-                    var d = R * c; // Distance in km
-                    return d.toFixed(1);
-                }
-
-                function deg2rad(deg) {
-                    return deg * (Math.PI/180);
-                }
-
-                const facilities = [
-                    { 
-                        name: "Gwalior Smart City Center", 
-                        rating: "4.9", 
-                        reviews: "112", 
-                        lat: 26.2037, lng: 78.1574, // Dummy coords near Gwalior center
-                        address: "City Center, Gwalior, Madhya Pradesh 474011",
-                        tags: ["All Electronics", "Batteries", "+3 more"],
-                        verified: true,
-                        featured: true,
-                        icon: "🏙️"
-                    },
-                    { 
-                        name: "Delhi E-Waste Drop-off", 
-                        rating: "4.4", 
-                        reviews: "156", 
-                        lat: 28.6304, lng: 77.2177,
-                        address: "Connaught Place, New Delhi, Delhi 110001",
-                        tags: ["Laptops", "Phones", "Tablets", "+2 more"],
-                        verified: false,
-                        featured: false,
-                        icon: "🛒"
-                    },
-                    { 
-                        name: "GreenTech Recyclers Mumbai", 
-                        rating: "4.8", 
-                        reviews: "322", 
-                        lat: 19.1136, lng: 72.8697,
-                        address: "Andheri Kurla Road, Andheri East, Mumbai, Maharashtra 400059",
-                        tags: ["Computers & Laptops", "Mobile Phones", "Tablets", "+6 more"],
-                        verified: true,
-                        featured: true,
-                        icon: "🏭"
-                    },
-                    { 
-                        name: "EcoWaste Hub Bengaluru", 
-                        rating: "4.6", 
-                        reviews: "218", 
-                        lat: 12.9698, lng: 77.7500,
-                        address: "ITPL Main Rd, Whitefield, Bengaluru, Karnataka 560066",
-                        tags: ["Computers", "Phones", "Tablets", "+4 more"],
-                        verified: true,
-                        featured: false,
-                        icon: "♻️"
-                    },
-                    { 
-                        name: "Hyderabad Circular Tech", 
-                        rating: "4.9", 
-                        reviews: "451", 
-                        lat: 17.4483, lng: 78.3915,
-                        address: "Hitech City Rd, Madhapur, Hyderabad, Telangana 500081",
-                        tags: ["All Electronics", "Computers", "Phones", "+8 more"],
-                        verified: true,
-                        featured: true,
-                        icon: "🔋"
-                    }
-                ];
-
-                facilities.forEach(fac => {
-                    let badges = '';
-                    if(fac.verified) badges += `<span class="s-badge verified">✓ Certified</span>`;
-                    if(fac.featured) badges += `<span class="s-badge">Featured</span>`;
-
-                    let tagsHtml = fac.tags.map(t => `<span class="s-tag">${t}</span>`).join('');
-                    
-                    // CALCULATE DISTANCE
-                    let distKm = getDistanceFromLatLonInKm(originLat, originLng, fac.lat, fac.lng);
-                    let distDisplay = distKm + " km";
-
-                    // Directions Link
-                    let mapsLink = `http://maps.google.com/maps?q=${encodeURIComponent(fac.address)}`;
-
-                    solContainer.innerHTML += `
-                        <div class="s-card">
-                            <div class="s-img-container">
-                                ${fac.icon}
-                                <div class="s-badge-container">${badges}</div>
-                            </div>
-                            <div class="s-card-content">
-                                <div class="s-card-header">
-                                    <h3 class="s-card-title">${fac.name}</h3>
-                                    <div class="s-rating">
-                                        <span class="star">★</span>${fac.rating} <span class="s-reviews">(${fac.reviews})</span>
-                                    </div>
-                                </div>
-                                <div class="s-meta">
-                                    <div class="s-meta-item">📍 ${distDisplay}</div>
-                                    <div class="s-meta-item" style="font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${fac.address}</div>
-                                    <div class="s-open">● Open Now <span style="font-weight:400; color:#6b7280; font-size:0.75rem;">• 9:00 AM - 6:00 PM</span></div>
-                                </div>
-                                <div class="s-tags">
-                                    ${tagsHtml}
-                                </div>
-                                <div class="s-actions">
-                                    <a href="${mapsLink}" target="_blank" class="btn btn-primary btn-sm btn-full">Directions ↗</a>
-                                    <button class="btn btn-outline btn-sm btn-full">Call</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-        });
-
-        // --- 5. WIZARD LOGIC (Simplified) ---
+        // --- 7. WIZARD ---
         let currentStep = 1;
-        let selectedCategory = '';
-        function selectCategory(el, category) {
-            document.querySelectorAll('.category-option').forEach(opt => opt.classList.remove('selected'));
+        function selectCategory(el, cat) {
+            document.querySelectorAll('.category-option').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
-            selectedCategory = category;
-            document.getElementById('summary-cat').innerText = category;
         }
         function changeStep(dir) {
-            if (currentStep === 1 && dir === 1 && !selectedCategory) { alert("Please select a category."); return; }
             document.getElementById(`step-content-${currentStep}`).classList.add('hidden');
             document.getElementById(`step-indicator-${currentStep}`).classList.remove('active');
-            if(dir===1) document.getElementById(`step-indicator-${currentStep}`).classList.add('completed');
+            if(dir > 0) document.getElementById(`step-indicator-${currentStep}`).classList.add('completed');
+            
             currentStep += dir;
+            
             document.getElementById(`step-content-${currentStep}`).classList.remove('hidden');
             document.getElementById(`step-indicator-${currentStep}`).classList.add('active');
             
             const nextBtn = document.getElementById('next-btn');
             document.getElementById('prev-btn').style.display = currentStep > 1 ? 'block' : 'none';
-            if(currentStep === 5) { nextBtn.innerText = 'Submit Request'; nextBtn.onclick = submitForm; } 
-            else { nextBtn.innerText = 'Continue >'; nextBtn.onclick = () => changeStep(1); }
+            
+            if(currentStep === 4) {
+                nextBtn.style.display = 'none';
+                
+                // AWARD POINTS LOGIC
+                let pts = parseInt(localStorage.getItem('ecoPoints')) || 1250;
+                pts += 100; // Reward for submission
+                localStorage.setItem('ecoPoints', pts);
+                updatePointsDisplay(pts);
+            }
+            else { nextBtn.style.display = 'block'; nextBtn.innerText = currentStep === 3 ? 'Submit Request' : 'Continue'; }
         }
-        function submitForm() { alert("Request Submitted! 🌱"); location.reload(); }
         function handleFiles(files) {
-            const gallery = document.getElementById('gallery');
-            gallery.innerHTML = '';
-            Array.from(files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = (e) => { const img = document.createElement('img'); img.src = e.target.result; img.className = 'preview-img'; gallery.appendChild(img); };
-                reader.readAsDataURL(file);
+            const gal = document.getElementById('gallery');
+            gal.innerHTML = '';
+            Array.from(files).forEach(f => {
+                let img = document.createElement('img');
+                img.src = URL.createObjectURL(f);
+                img.className = 'preview-img';
+                gal.appendChild(img);
             });
         }
 
-        // --- 6. ANIMATION & EXPORT ---
-        function animateDashboard() {
-            const animateValue = (id, end) => {
-                const obj = document.getElementById(id);
-                if(!obj || obj.innerText !== "0") return;
-                let start = null; const dur = 1500;
-                const step = (ts) => { if (!start) start = ts; const prog = Math.min((ts - start) / dur, 1); obj.innerHTML = Math.floor(prog * end).toLocaleString(); if (prog < 1) requestAnimationFrame(step); };
-                requestAnimationFrame(step);
-            };
-            animateValue("total-devices", 45713); animateValue("total-co2", 235370); animateValue("total-users", 12366); animateValue("total-centers", 456);
+        // --- 8. AI CAMERA ---
+        let model = null;
+        async function loadModel() {
+            try {
+                model = await cocoSsd.load();
+                document.getElementById('model-status').innerText = "✅ AI Ready";
+            } catch(e) { console.log("AI Error", e); }
         }
-        function exportReport() {
-            const csv = `EcoCircuit Report\nDevices: ${document.getElementById('total-devices').innerText}\nCO2: ${document.getElementById('total-co2').innerText}`;
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const a = document.createElement('a'); a.href = window.URL.createObjectURL(blob); a.download = `Report_${Date.now()}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        }
-        async function shareImpact() {
-            try { await navigator.share({ title: 'EcoCircuit', text: 'Check my impact!', url: window.location.href }); } catch(e) { alert("Copied to clipboard!"); }
-        }
-
-        // --- 7. AI & CAMERA LOGIC ---
-        let model = undefined;
-        (async function() { 
-            try { 
-                model = await cocoSsd.load(); 
-                document.getElementById('model-status').innerText = "AI Ready ✅"; 
-            } catch (e) { console.error(e); } 
-        })();
 
         async function startCamera() {
+            if(!model) await loadModel();
             const video = document.getElementById('webcam');
-            if (!model) { alert("Loading AI..."); return; }
+            const scanLine = document.getElementById('scan-line');
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 video.srcObject = stream;
-                video.onloadedmetadata = () => { document.getElementById('placeholder').style.display = 'none'; detectFrame(video); };
-            } catch (e) { alert("Camera Error: Permission denied or no camera found."); }
+                document.getElementById('placeholder').style.display = 'none';
+                scanLine.style.display = 'block';
+                video.onloadeddata = () => { detectFrame(video); };
+            } catch(e) { alert("Please enable camera permissions."); }
         }
 
         async function detectFrame(video) {
-            const canvas = document.getElementById('canvas'); 
+            const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = video.videoWidth; 
+            canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            
-            const predictions = await model.detect(video);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            let foundItem = false;
-
-            if (predictions.length > 0) {
+            if(model) {
+                const predictions = await model.detect(video);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 predictions.forEach(p => {
-                    // Confidence threshold > 55%
-                    if (p.score > 0.55) {
-                        const [x, y, w, h] = p.bbox;
-                        const detectedClass = p.class.toLowerCase();
+                    if(p.score > 0.6) {
+                        const [x,y,w,h] = p.bbox;
+                        ctx.strokeStyle = '#10B981'; ctx.lineWidtah = 4; ctx.strokeRect(x,y,w,h);
+                        ctx.fillStyle = '#10B981'; ctx.fillRect(x, y-25, w, 25);
+                        ctx.fillStyle = 'white'; ctx.font = '18px Arial';
+                        ctx.fillText(p.class.toUpperCase() + ' (' + Math.round(p.score*100) + '%)', x+5, y-5);
                         
-                        // --- MAPPING LOGIC ---
-                        // 1. Check if direct match exists in DB
-                        let dbKey = null;
-                        if (eWasteDB[detectedClass]) {
-                            dbKey = detectedClass;
-                        } 
-                        // 2. If not, check the AI Map
-                        else if (aiMap[detectedClass]) {
-                            dbKey = aiMap[detectedClass];
-                        }
-
-                        // Draw Bounding Box
-                        ctx.strokeStyle = dbKey ? '#10B981' : '#F59E0B'; // Green if recyclable, Orange if generic
-                        ctx.lineWidth = 4; 
-                        ctx.strokeRect(x, y, w, h);
-                        
-                        ctx.fillStyle = dbKey ? '#10B981' : '#F59E0B'; 
-                        ctx.fillRect(x, y - 25, w, 25);
-                        
-                        ctx.fillStyle = '#fff'; 
-                        // Show Mapped Name if available, otherwise raw AI class
-                        const label = dbKey ? eWasteDB[dbKey].name : p.class.toUpperCase();
-                        ctx.fillText(label, x + 5, y - 5);
-                        
-                        // Update Dashboard if it's a known e-waste item
-                        if(dbKey) {
-                            const data = eWasteDB[dbKey];
-                            if(!foundItem) { // Only update dashboard for the first prominent item found
-                                document.getElementById('item-name').innerText = data.name;
-                                document.getElementById('val-co2').innerText = data.impact.co2;
-                                document.getElementById('val-tree').innerText = data.impact.tree;
-                                document.getElementById('val-energy').innerText = data.impact.energy;
-                                document.getElementById('val-water').innerText = data.impact.water;
-                                foundItem = true;
-                            }
+                        const dbKey = aiMap[p.class.toLowerCase()];
+                        if(dbKey && impactDB[dbKey]) {
+                            document.getElementById('item-name').innerText = p.class.toUpperCase();
+                            document.getElementById('val-co2').innerText = impactDB[dbKey].co2;
+                            document.getElementById('val-energy').innerText = impactDB[dbKey].energy;
                         }
                     }
                 });
             }
             requestAnimationFrame(() => detectFrame(video));
         }
+
+        // INIT
+        window.onload = () => {
+            loadModel();
+            initCalculator();
+            loadSolutions(); 
+            checkDailyReward();
+        };
+
     </script>
 </body>
 </html>
